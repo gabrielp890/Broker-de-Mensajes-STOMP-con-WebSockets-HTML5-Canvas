@@ -20,6 +20,7 @@ package edu.eci.arsw.collabpaint;
  *
  * @author hcadavid
  */
+
 import java.util.logging.Logger;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
