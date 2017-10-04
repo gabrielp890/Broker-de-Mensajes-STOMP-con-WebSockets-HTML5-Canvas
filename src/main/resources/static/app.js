@@ -6,10 +6,9 @@ this.x = x;
         this.y = y;
 }
 }
-
 var stompClient = null;
         var addPointToCanvas = function (point) {
-        var canvas = document.getElementById("canvas");
+        var canvas = document.getElementById("canvas"), context = canvas.getContext("2d");
                 var ctx = canvas.getContext("2d");
                 ctx.beginPath();
                 ctx.arc(point.x, point.y, 3, 0, 2 * Math.PI);
@@ -32,7 +31,7 @@ var stompClient = null;
                 console.log('Connected: ' + frame);
                         stompClient.subscribe('/topic/newpoint', function (eventbody) {
 //                        var coord = JSON.parse(eventbody.body);
-                                alert(eventbody.body);
+                        alert(eventbody.body);
                         });
                 });
         };
@@ -42,6 +41,18 @@ var stompClient = null;
         var can = document.getElementById("canvas");
                 //websocket connection
                 connectAndSubscribe();
+                if (window.PointEvent){
+        canvas.addEventListener("pointerdown",
+                function(event){
+                alert('pointerdown at' + event.pageX + ',' + event.pageY);
+                });
+        } else{
+        canvas.addEventListener("mousedown",
+                function (event){
+                alert('mousedown at' + event.clientX + ',' + event.clientY);
+                publishPoint(px,py);
+                });
+        }
         },
                 publishPoint: function(px, py){
                 var pt = new Point(px, py);
