@@ -6,7 +6,7 @@ this.x = x;
         this.y = y;
         }
 }
-var stompClient = null,topic;
+var stompClient = null, topic;
         var addPointToCanvas = function (point) {
         var canvas = document.getElementById("canvas"), context = canvas.getContext("2d");
                 var ctx = canvas.getContext("2d");
@@ -29,10 +29,22 @@ var stompClient = null,topic;
                 //subscribe to /topic/TOPICXX when connections succeed
                 stompClient.connect({}, function (frame) {
                 console.log('Connected: ' + frame);
-                        stompClient.subscribe('/topic/newpoint.'+topic, function (eventbody) {
+                        stompClient.subscribe('/topic/newpolygon.' + topic, function (eventbody) {
                         var coord = JSON.parse(eventbody.body);
                                 alert("x: " + coord.x + " y: " + coord.y);
-                                addPointToCanvas(new Point(coord.x,coord.y));
+//                                addPointToCanvas(new Point(coord.x,coord.y));
+                                var c = document.getElementById("canvas");
+                                var ct = c.getContext("2d");
+                                ct.clearRect(0, 0, c.width, c.height);
+                                ct.beginPath();
+                                ct.moveTo(0, 0);
+                                for (let i = 0; i < coord.length - 1; i++){
+                        ct.moveTo(coord[i].x, coord[i].y);
+                                ct.lineTo(coord[i + 1].x, coord[i + 1].y);
+                        }
+                        ct.moveTo(coord[coord.length - 1].x, coord[coord.length - 1].y);
+                                ct.lineTo(coord[0].x, coord[0].y)
+                                ct.stroke();
                         });
                 });
         };
@@ -51,7 +63,7 @@ var can = document.getElementById("canvas");
 canvas.addEventListener("pointerdown", eventHandler);
 //        alert('pointerdown at ' + event.pageX + ',' + event.pageY);
 } else{
-canvas.addEventListener("mousedown",eventHandler);
+canvas.addEventListener("mousedown", eventHandler);
 //        alert('mousedown at ' + event.clientX + ',' + event.clientY);
 //                publishPoint(px, py);
 }
@@ -61,7 +73,7 @@ canvas.addEventListener("mousedown",eventHandler);
                 console.info("publishing point at " + pt);
 //                addPointToCanvas(pt);
                 //publicar el evento
-                stompClient.send("/topic/newpoint."+topic, {}, JSON.stringify(pt));
+                stompClient.send("/app/newpoint." + topic, {}, JSON.stringify(pt));
         },
         disconnect: function () {
         if (stompClient !== null) {
@@ -71,8 +83,11 @@ canvas.addEventListener("mousedown",eventHandler);
                 console.log("Disconnected");
         },
         suscribirTopic:function (newTopic){
-            topic=newTopic;
-            connectAndSubscribe();
-       }
+        topic = newTopic;
+                var canvas = document.getElementById("canvas");
+                var ctx = canvas.getContext("2d");
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                connectAndSubscribe();
+        }
 };
 })();
