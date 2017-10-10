@@ -6,7 +6,7 @@ this.x = x;
         this.y = y;
         }
 }
-var stompClient = null;
+var stompClient = null,topic;
         var addPointToCanvas = function (point) {
         var canvas = document.getElementById("canvas"), context = canvas.getContext("2d");
                 var ctx = canvas.getContext("2d");
@@ -29,7 +29,7 @@ var stompClient = null;
                 //subscribe to /topic/TOPICXX when connections succeed
                 stompClient.connect({}, function (frame) {
                 console.log('Connected: ' + frame);
-                        stompClient.subscribe('/topic/newpoint', function (eventbody) {
+                        stompClient.subscribe('/topic/newpoint.'+topic, function (eventbody) {
                         var coord = JSON.parse(eventbody.body);
                                 alert("x: " + coord.x + " y: " + coord.y);
                                 addPointToCanvas(new Point(coord.x,coord.y));
@@ -46,7 +46,7 @@ init: function () {
 var can = document.getElementById("canvas");
         ctx = can.getContext("2d");
         //websocket connection
-        connectAndSubscribe();
+//        connectAndSubscribe();
         if (window.PointEvent){
 canvas.addEventListener("pointerdown", eventHandler);
 //        alert('pointerdown at ' + event.pageX + ',' + event.pageY);
@@ -61,7 +61,7 @@ canvas.addEventListener("mousedown",eventHandler);
                 console.info("publishing point at " + pt);
 //                addPointToCanvas(pt);
                 //publicar el evento
-                stompClient.send("/topic/newpoint", {}, JSON.stringify(pt));
+                stompClient.send("/topic/newpoint."+topic, {}, JSON.stringify(pt));
         },
         disconnect: function () {
         if (stompClient !== null) {
@@ -69,6 +69,10 @@ canvas.addEventListener("mousedown",eventHandler);
         }
         setConnected(false);
                 console.log("Disconnected");
-        }
+        },
+        suscribirTopic:function (newTopic){
+            topic=newTopic;
+            connectAndSubscribe();
+       }
 };
 })();
