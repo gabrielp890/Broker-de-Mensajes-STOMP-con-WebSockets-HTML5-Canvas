@@ -4,7 +4,7 @@ class Point{
 constructor(x, y){
 this.x = x;
         this.y = y;
-}
+        }
 }
 var stompClient = null;
         var addPointToCanvas = function (point) {
@@ -30,43 +30,45 @@ var stompClient = null;
                 stompClient.connect({}, function (frame) {
                 console.log('Connected: ' + frame);
                         stompClient.subscribe('/topic/newpoint', function (eventbody) {
-//                        var coord = JSON.parse(eventbody.body);
-                        alert(eventbody.body);
+                        var coord = JSON.parse(eventbody.body);
+                                alert("x: " + coord.x + " y: " + coord.y);
+                                addPointToCanvas(new Point(coord.x,coord.y));
                         });
                 });
         };
-        return {
-
-        init: function () {
-        var can = document.getElementById("canvas");
-                //websocket connection
-                connectAndSubscribe();
-                if (window.PointEvent){
-        canvas.addEventListener("pointerdown",
-                function(event){
-                alert('pointerdown at' + event.pageX + ',' + event.pageY);
-                });
-        } else{
-        canvas.addEventListener("mousedown",
-                function (event){
-                alert('mousedown at' + event.clientX + ',' + event.clientY);
-                publishPoint(px,py);
-                });
+        var eventHandler = function (evento){
+        var coordinates = getMousePosition(evento);
+                app.publishPoint(coordinates.x, coordinates.y);
         }
+return {
+
+init: function () {
+var can = document.getElementById("canvas");
+        ctx = can.getContext("2d");
+        //websocket connection
+        connectAndSubscribe();
+        if (window.PointEvent){
+canvas.addEventListener("pointerdown", eventHandler);
+//        alert('pointerdown at ' + event.pageX + ',' + event.pageY);
+} else{
+canvas.addEventListener("mousedown",eventHandler);
+//        alert('mousedown at ' + event.clientX + ',' + event.clientY);
+//                publishPoint(px, py);
+}
+},
+        publishPoint: function(px, py){
+        var pt = new Point(px, py);
+                console.info("publishing point at " + pt);
+//                addPointToCanvas(pt);
+                //publicar el evento
+                stompClient.send("/topic/newpoint", {}, JSON.stringify(pt));
         },
-                publishPoint: function(px, py){
-                var pt = new Point(px, py);
-                        console.info("publishing point at " + pt);
-                        addPointToCanvas(pt);
-                        //publicar el evento
-                        stompClient.send("/topic/newpoint", {}, JSON.stringify(pt));
-                },
-                disconnect: function () {
-                if (stompClient !== null) {
-                stompClient.disconnect();
-                }
-                setConnected(false);
-                        console.log("Disconnected");
-                }
-        };
-        })();
+        disconnect: function () {
+        if (stompClient !== null) {
+        stompClient.disconnect();
+        }
+        setConnected(false);
+                console.log("Disconnected");
+        }
+};
+})();
